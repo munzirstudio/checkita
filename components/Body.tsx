@@ -301,7 +301,7 @@ const Body: React.FC<BodyProps> = ({
           />
           {showSchedulePill() && (
             <>
-              <View style={{ width: Gap.gap_sm }} />
+              <View style={{ width: Gap.gap_sm + Gap.gap_xs }} />
               <PillStatsCheckin
                 label="Schedule"
                 count={currentMonthSchedules.length}
