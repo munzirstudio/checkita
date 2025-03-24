@@ -117,6 +117,14 @@ const styles = StyleSheet.create({
     backgroundColor: Color.colorAliceblue,
     borderWidth: 0,
   },
+  dateSelectedCheckin: {
+    backgroundColor: '#1D40AE',
+  },
+  dateSelectedScheduled: {
+    backgroundColor: Color.colorAliceblue,
+    borderWidth: 1,
+    borderColor: Color.colorRoyalblue,
+  },
   dateSelectedInactive: {
     backgroundColor: "transparent",
     borderWidth: 1,
@@ -202,9 +210,9 @@ const Body: React.FC<BodyProps> = ({
       case "disabled":
         return styles.dateDisabled;
       case "checkin":
-        return styles.dateCheckin;
+        return isSelected ? styles.dateSelectedCheckin : styles.dateCheckin;
       case "scheduled":
-        return styles.dateScheduled;
+        return isSelected ? styles.dateSelectedScheduled : styles.dateScheduled;
       case "inactive":
         return isSelected ? styles.dateSelectedInactive : styles.dateInactive;
       case "active":
