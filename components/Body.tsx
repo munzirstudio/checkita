@@ -1,5 +1,5 @@
 import * as React from "react";
-import { StyleSheet, View, Text } from "react-native";
+import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import PillStatsCheckin from "./PillStatsCheckin";
 import {
   Gap,
@@ -10,368 +10,319 @@ import {
   Color,
   Border,
 } from "../GlobalStyles";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay, addDays, subDays } from "date-fns";
+import { DateStatus } from "./BottomSection";
 
-const Body = () => {
+interface BodyProps {
+  currentDate: Date;
+  selectedDate: Date | null;
+  checkinDates: Date[];
+  scheduledDates: Date[];
+  onDateSelect: (date: Date) => void;
+}
+
+const styles = StyleSheet.create({
+  body: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+  },
+  statsBarFlexBox: {
+    flexDirection: "row",
+    alignSelf: "stretch",
+    paddingHorizontal: 8,
+    justifyContent: "center",
+  },
+  statsBar: {
+    gap: 12,
+    marginBottom: 32,
+  },
+  pillContainer: {
+    flexDirection: 'row',
+    flex: 1,
+    justifyContent: 'center',
+  },
+  pillContainerCenter: {
+    alignSelf: 'center',
+    flex: undefined,
+  },
+  calendar: {
+    gap: 3,
+  },
+  weekFlexBox: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignSelf: "stretch",
+    paddingHorizontal: 8,
+    marginBottom: 3,
+  },
+  dateLayout: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dateTypo: {
+    textAlign: "center",
+    fontFamily: FontFamily.sMMedium,
+    fontWeight: "500",
+    fontSize: FontSize.sMMedium_size,
+  },
+  week: {
+    color: "#6B7280",
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  datepickerWeekDate: {
+    width: 38,
+    height: 38,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dateNumber: {
+    width: 38,
+    height: 38,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  icon: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  iconLayout: {
+    overflow: "hidden",
+  },
+  date: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontFamily: FontFamily.sMMedium,
+    fontWeight: "500",
+  },
+  dateDisabled: {
+    backgroundColor: "transparent",
+  },
+  dateInactive: {
+    backgroundColor: "transparent",
+  },
+  dateActive: {
+    backgroundColor: "transparent",
+  },
+  dateCheckin: {
+    backgroundColor: Color.colorRoyalblue,
+  },
+  dateScheduled: {
+    backgroundColor: Color.colorAliceblue,
+    borderWidth: 0,
+  },
+  dateSelectedInactive: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: Color.colorRoyalblue,
+  },
+  dateSelectedActive: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: Color.colorRoyalblue,
+  },
+  dateTextDisabled: {
+    color: Color.colorGainsboro_100,
+  },
+  dateTextInactive: {
+    color: "#A5A9AF",
+  },
+  dateTextActive: {
+    color: Color.colorBlack,
+  },
+  dateTextCheckin: {
+    color: Color.colorWhite,
+  },
+  dateTextScheduled: {
+    color: Color.colorBlack,
+  },
+  weekNames: {
+    flexDirection: "row",
+    alignSelf: "stretch",
+  }
+});
+
+const Body: React.FC<BodyProps> = ({
+  currentDate,
+  selectedDate,
+  checkinDates,
+  scheduledDates,
+  onDateSelect,
+}) => {
+  const monthStart = startOfMonth(currentDate);
+  const monthEnd = endOfMonth(currentDate);
+  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+
+  // Get counts for current month only
+  const currentMonthCheckins = checkinDates.filter(date => isSameMonth(date, currentDate));
+  const currentMonthSchedules = scheduledDates.filter(date => isSameMonth(date, currentDate));
+
+  // Show schedule pill for current month and future months
+  const showSchedulePill = () => {
+    const today = new Date();
+    const firstOfDisplayedMonth = startOfMonth(currentDate);
+    const firstOfCurrentMonth = startOfMonth(today);
+    return firstOfDisplayedMonth >= firstOfCurrentMonth;
+  };
+
+  // Function to determine if the displayed month is before March 2025
+  const isBeforeMarch2025 = () => {
+    const march2025 = new Date(2025, 2, 1); // March is 2 (0-based)
+    return currentDate < march2025;
+  };
+
+  const getDateStatus = (date: Date): DateStatus => {
+    // If not in current month, always return disabled
+    if (!isSameMonth(date, currentDate)) return "disabled";
+
+    // First check for check-in and scheduled states as they take precedence
+    if (checkinDates.some(d => isSameDay(d, date))) return "checkin";
+    if (scheduledDates.some(d => isSameDay(d, date))) return "scheduled";
+    
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const isUpcoming = date >= now;
+
+    return isUpcoming ? "active" : "inactive";
+  };
+
+  const getDateStyle = (date: Date) => {
+    const status = getDateStatus(date);
+    const isSelected = selectedDate && isSameDay(date, selectedDate);
+
+    switch (status) {
+      case "disabled":
+        return styles.dateDisabled;
+      case "checkin":
+        return styles.dateCheckin;
+      case "scheduled":
+        return styles.dateScheduled;
+      case "inactive":
+        return isSelected ? styles.dateSelectedInactive : styles.dateInactive;
+      case "active":
+        return isSelected ? styles.dateSelectedActive : styles.dateActive;
+      default:
+        return styles.dateActive;
+    }
+  };
+
+  const getDateTextStyle = (date: Date) => {
+    const status = getDateStatus(date);
+    
+    switch (status) {
+      case "disabled":
+        return styles.dateTextDisabled;
+      case "inactive":
+        return styles.dateTextInactive;
+      case "active":
+        return styles.dateTextActive;
+      case "checkin":
+        return styles.dateTextCheckin;
+      case "scheduled":
+        return styles.dateTextScheduled;
+      default:
+        return styles.dateTextActive;
+    }
+  };
+
+  const renderCalendarDays = () => {
+    const weeks: Date[][] = [];
+    let currentWeek: Date[] = [];
+
+    // Add days from previous month
+    const firstDayOfMonth = monthStart.getDay();
+    for (let i = firstDayOfMonth - 1; i >= 0; i--) {
+      currentWeek.unshift(subDays(monthStart, i + 1));
+    }
+
+    // Add days of current month
+    days.forEach((day) => {
+      if (currentWeek.length === 7) {
+        weeks.push([...currentWeek]);
+        currentWeek = [];
+      }
+      currentWeek.push(day);
+    });
+
+    // Add days from next month
+    if (currentWeek.length > 0) {
+      while (currentWeek.length < 7) {
+        currentWeek.push(addDays(monthEnd, currentWeek.length + 1));
+      }
+      weeks.push(currentWeek);
+    }
+
+    return weeks.map((week, weekIndex) => (
+      <View key={weekIndex} style={styles.weekFlexBox}>
+        {week.map((date, dayIndex) => {
+          const dateStatus = getDateStatus(date);
+          const now = new Date();
+          now.setHours(0, 0, 0, 0);
+          
+          // Only disable dates from previous/next months
+          const isDisabled = dateStatus === "disabled";
+          const isSelected = selectedDate && isSameDay(date, selectedDate);
+          
+          return (
+            <TouchableOpacity
+              key={dayIndex}
+              style={styles.dateNumber}
+              onPress={() => !isDisabled && onDateSelect(date)}
+              disabled={isDisabled}
+            >
+              <View style={[styles.icon, getDateStyle(date)]}>
+                <Text style={[styles.date, getDateTextStyle(date)]}>
+                  {format(date, "d")}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    ));
+  };
+
   return (
     <View style={styles.body}>
       <View style={[styles.statsBar, styles.statsBarFlexBox]}>
-        <PillStatsCheckin checkIn="Check-in" />
-        <PillStatsCheckin
-          checkIn="Schedule"
-          iconBorderRadius={999}
-          iconBackgroundColor="#eff6ff"
-        />
+        <View style={[styles.pillContainer, !showSchedulePill() && styles.pillContainerCenter]}>
+          <PillStatsCheckin
+            label="Check-in"
+            count={currentMonthCheckins.length}
+            color={Color.colorRoyalblue}
+          />
+          {showSchedulePill() && (
+            <>
+              <View style={{ width: Gap.gap_sm }} />
+              <PillStatsCheckin
+                label="Schedule"
+                count={currentMonthSchedules.length}
+                color={Color.colorAliceblue}
+              />
+            </>
+          )}
+        </View>
       </View>
-      <View style={[styles.calendar, styles.statsBarFlexBox]}>
-        <View style={[styles.weekNames, styles.weekFlexBox]}>
-          <View style={[styles.datepickerWeekDate, styles.dateLayout]}>
-            <Text style={[styles.week, styles.dateTypo]}>Su</Text>
-          </View>
-          <View style={[styles.datepickerWeekDate, styles.dateLayout]}>
-            <Text style={[styles.week, styles.dateTypo]}>Mo</Text>
-          </View>
-          <View style={[styles.datepickerWeekDate, styles.dateLayout]}>
-            <Text style={[styles.week, styles.dateTypo]}>Tu</Text>
-          </View>
-          <View style={[styles.datepickerWeekDate, styles.dateLayout]}>
-            <Text style={[styles.week, styles.dateTypo]}>We</Text>
-          </View>
-          <View style={[styles.datepickerWeekDate, styles.dateLayout]}>
-            <Text style={[styles.week, styles.dateTypo]}>Th</Text>
-          </View>
-          <View style={[styles.datepickerWeekDate, styles.dateLayout]}>
-            <Text style={[styles.week, styles.dateTypo]}>Fr</Text>
-          </View>
-          <View style={[styles.datepickerWeekDate, styles.dateLayout]}>
-            <Text style={[styles.week, styles.dateTypo]}>Sa</Text>
-          </View>
-        </View>
+      <View style={styles.calendar}>
         <View style={styles.weekFlexBox}>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date, styles.dateTypo]}>23</Text>
+          {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day, index) => (
+            <View key={index} style={styles.datepickerWeekDate}>
+              <Text style={[styles.week, styles.dateTypo]}>{day}</Text>
             </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date, styles.dateTypo]}>24</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date, styles.dateTypo]}>25</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date, styles.dateTypo]}>26</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date, styles.dateTypo]}>27</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date, styles.dateTypo]}>28</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date6, styles.dateTypo]}>1</Text>
-            </View>
-          </View>
+          ))}
         </View>
-        <View style={styles.weekFlexBox}>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date6, styles.dateTypo]}>2</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date6, styles.dateTypo]}>3</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date6, styles.dateTypo]}>4</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date6, styles.dateTypo]}>5</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date6, styles.dateTypo]}>6</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date6, styles.dateTypo]}>7</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date6, styles.dateTypo]}>8</Text>
-            </View>
-          </View>
-        </View>
-        <View style={styles.weekFlexBox}>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date6, styles.dateTypo]}>9</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date6, styles.dateTypo]}>10</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date6, styles.dateTypo]}>11</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date6, styles.dateTypo]}>12</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date6, styles.dateTypo]}>13</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date6, styles.dateTypo]}>14</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date6, styles.dateTypo]}>15</Text>
-            </View>
-          </View>
-        </View>
-        <View style={styles.weekFlexBox}>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date6, styles.dateTypo]}>16</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date6, styles.dateTypo]}>17</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date6, styles.dateTypo]}>18</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date6, styles.dateTypo]}>19</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date6, styles.dateTypo]}>20</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon26, styles.iconLayout]}>
-              <Text style={[styles.date6, styles.dateTypo]}>21</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon26, styles.iconLayout]}>
-              <Text style={[styles.date27, styles.dateTypo]}>22</Text>
-            </View>
-          </View>
-        </View>
-        <View style={styles.weekFlexBox}>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon28, styles.iconLayout]}>
-              <Text style={[styles.date27, styles.dateTypo]}>23</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon29, styles.iconLayout]}>
-              <Text style={[styles.date29, styles.dateTypo]}>24</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date27, styles.dateTypo]}>25</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date27, styles.dateTypo]}>26</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date27, styles.dateTypo]}>27</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date27, styles.dateTypo]}>28</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date27, styles.dateTypo]}>29</Text>
-            </View>
-          </View>
-        </View>
-        <View style={styles.weekFlexBox}>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date27, styles.dateTypo]}>30</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date27, styles.dateTypo]}>31</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date, styles.dateTypo]}>1</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date, styles.dateTypo]}>2</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date, styles.dateTypo]}>3</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date, styles.dateTypo]}>4</Text>
-            </View>
-          </View>
-          <View style={[styles.dateNumber, styles.dateLayout]}>
-            <View style={[styles.icon, styles.iconLayout]}>
-              <Text style={[styles.date, styles.dateTypo]}>5</Text>
-            </View>
-          </View>
-        </View>
+        {renderCalendarDays()}
       </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  statsBarFlexBox: {
-    paddingVertical: 0,
-    justifyContent: "center",
-    alignItems: "center",
-    alignSelf: "stretch",
-  },
-  weekFlexBox: {
-    gap: Gap.gap_0,
-    justifyContent: "space-between",
-    overflow: "hidden",
-    borderRadius:
-      StyleVariable.advancedFormsDatepickerWeekNamesInlineListBorderRadius,
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "stretch",
-  },
-  dateLayout: {
-    width: 42,
-    justifyContent: "center",
-  },
-  dateTypo: {
-    textAlign: "left",
-    fontFamily: FontFamily.sMMedium,
-    fontWeight: "500",
-    lineHeight: 20,
-    letterSpacing: 0.1,
-    fontSize: FontSize.sMMedium_size,
-  },
-  iconLayout: {
-    height: 38,
-    width: 38,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  statsBar: {
-    paddingHorizontal: Padding.p_xl,
-    gap: Gap.gap_md,
-    flexDirection: "row",
-  },
-  week: {
-    color: Color.colorSlategray,
-  },
-  datepickerWeekDate: {
-    flexDirection: "row",
-  },
-  weekNames: {
-    paddingHorizontal: 0,
-    paddingVertical:
-      StyleVariable.advancedFormsDatepickerWeekNamesSpacingBottom,
-  },
-  date: {
-    color: Color.colorGainsboro_200,
-  },
-  icon: {
-    borderRadius: Border.br_980xl,
-    height: 38,
-    width: 38,
-  },
-  dateNumber: {
-    height: 42,
-    alignItems: "center",
-  },
-  date6: {
-    color: Color.colorDarkgray,
-  },
-  icon26: {
-    borderRadius: Border.br_678xl_1,
-    borderStyle: "solid",
-    borderColor: Color.colorRoyalblue,
-    borderWidth: 1,
-  },
-  date27: {
-    color: Color.colorGray,
-  },
-  icon28: {
-    backgroundColor: Color.colorAliceblue,
-    borderRadius: Border.br_980xl,
-    height: 38,
-    width: 38,
-  },
-  date29: {
-    color: Color.colorWhite,
-  },
-  icon29: {
-    backgroundColor: Color.colorRoyalblue,
-    borderRadius: Border.br_980xl,
-    height: 38,
-    width: 38,
-  },
-  calendar: {
-    paddingHorizontal: Padding.p_mini,
-    gap: Gap.gap_xs,
-  },
-  body: {
-    gap: Gap.gap_lg,
-    alignItems: "center",
-    alignSelf: "stretch",
-  },
-});
 
 export default Body;

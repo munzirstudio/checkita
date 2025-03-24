@@ -1,38 +1,181 @@
-const Stack = createNativeStackNavigator();
 import * as React from "react";
+import { StyleSheet, View, Text } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
-import { useFonts } from "expo-font";
-import Home from "./screens/Home";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { format, startOfDay, isSameDay } from "date-fns";
+import Header from "./components/Header";
+import Body from "./components/Body";
+import BottomSection from "./components/BottomSection";
+import { Color, FontFamily, FontSize } from "./GlobalStyles";
 
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { View, Text, Pressable, TouchableOpacity } from "react-native";
+const Tab = createBottomTabNavigator();
 
-const App = () => {
-  const [hideSplashScreen, setHideSplashScreen] = React.useState(true);
+type Screen = "home" | "leaderboard" | "settings";
 
-  const [fontsLoaded, error] = useFonts({
-    "Inter-Medium": require("./assets/fonts/Inter-Medium.ttf"),
-    "Inter-SemiBold": require("./assets/fonts/Inter-SemiBold.ttf"),
-  });
+const HomeScreen = () => {
+  const [currentDate, setCurrentDate] = React.useState(new Date());
+  const [selectedDate, setSelectedDate] = React.useState<Date | null>(null);
+  const [checkinDates, setCheckinDates] = React.useState<Date[]>([]);
+  const [scheduledDates, setScheduledDates] = React.useState<Date[]>([]);
 
-  if (!fontsLoaded && !error) {
-    return null;
-  }
+  React.useEffect(() => {
+    // Set initial selected date to today
+    setSelectedDate(startOfDay(new Date()));
+  }, []);
+
+  const handleMonthChange = (date: Date) => {
+    setCurrentDate(date);
+    // Auto-select today's date if we're viewing the current month
+    const today = startOfDay(new Date());
+    if (format(date, 'yyyy-MM') === format(today, 'yyyy-MM')) {
+      setSelectedDate(today);
+    } else {
+      setSelectedDate(null);
+    }
+  };
+
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(startOfDay(date));
+  };
+
+  const handleCheckIn = () => {
+    if (!selectedDate) return;
+    setCheckinDates((prev: Date[]) => [...prev, selectedDate]);
+    setScheduledDates((prev: Date[]) =>
+      prev.filter((date: Date) => !isSameDay(date, selectedDate))
+    );
+  };
+
+  const handleSchedule = () => {
+    if (!selectedDate) return;
+    setScheduledDates((prev: Date[]) => [...prev, selectedDate]);
+  };
+
+  const handleClear = () => {
+    if (!selectedDate) return;
+    setCheckinDates((prev: Date[]) =>
+      prev.filter((date: Date) => !isSameDay(date, selectedDate))
+    );
+    setScheduledDates((prev: Date[]) =>
+      prev.filter((date: Date) => !isSameDay(date, selectedDate))
+    );
+  };
 
   return (
-    <>
-      <NavigationContainer>
-        {hideSplashScreen ? (
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen
-              name="Home"
-              component={Home}
-              options={{ headerShown: false }}
-            />
-          </Stack.Navigator>
-        ) : null}
-      </NavigationContainer>
-    </>
+    <View style={styles.container}>
+      <Header
+        currentDate={currentDate}
+        onMonthChange={handleMonthChange}
+      />
+      <Body
+        currentDate={currentDate}
+        selectedDate={selectedDate}
+        checkinDates={checkinDates}
+        scheduledDates={scheduledDates}
+        onDateSelect={handleDateSelect}
+      />
+      <BottomSection
+        selectedDate={selectedDate}
+        dateStatus={
+          !selectedDate
+            ? "disabled"
+            : checkinDates.some((date: Date) => isSameDay(date, selectedDate))
+            ? "checkin"
+            : scheduledDates.some((date: Date) => isSameDay(date, selectedDate))
+            ? "scheduled"
+            : selectedDate < startOfDay(new Date())
+            ? "inactive"
+            : "active"
+        }
+        onCheckIn={handleCheckIn}
+        onSchedule={handleSchedule}
+        onClear={handleClear}
+        onNavigate={() => {}}
+        currentScreen="home"
+      />
+    </View>
   );
 };
+
+const LeaderboardScreen = () => {
+  const [currentDate] = React.useState(new Date());
+  
+  const handleMonthChange = (date: Date) => {
+    // No-op since we don't need month navigation in leaderboard
+  };
+
+  return (
+    <View style={styles.container}>
+      <Header
+        currentDate={currentDate}
+        title="Leaderboard"
+        showChevrons={false}
+        onMonthChange={handleMonthChange}
+      />
+      <View style={styles.content}>
+        <Text style={styles.comingSoon}>Coming soon</Text>
+      </View>
+    </View>
+  );
+};
+
+const SettingsScreen = () => {
+  const [currentDate] = React.useState(new Date());
+  
+  const handleMonthChange = (date: Date) => {
+    // No-op since we don't need month navigation in settings
+  };
+
+  return (
+    <View style={styles.container}>
+      <Header
+        currentDate={currentDate}
+        title="Settings"
+        showChevrons={false}
+        onMonthChange={handleMonthChange}
+      />
+      <View style={styles.content}>
+        <Text style={styles.comingSoon}>Coming soon</Text>
+      </View>
+    </View>
+  );
+};
+
+const App = () => {
+  return (
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <Tab.Navigator
+          screenOptions={{
+            headerShown: false,
+            tabBarStyle: { display: "none" },
+          }}
+        >
+          <Tab.Screen name="Home" component={HomeScreen} />
+          <Tab.Screen name="Leaderboard" component={LeaderboardScreen} />
+          <Tab.Screen name="Settings" component={SettingsScreen} />
+        </Tab.Navigator>
+      </NavigationContainer>
+    </SafeAreaProvider>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Color.colorWhite,
+  },
+  content: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  comingSoon: {
+    fontSize: FontSize.size_base,
+    fontFamily: FontFamily.sMMedium,
+    color: Color.colorGray,
+  },
+});
+
 export default App;

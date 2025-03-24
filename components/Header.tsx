@@ -1,27 +1,61 @@
 import * as React from "react";
-import { Image } from "expo-image";
+import { TouchableOpacity } from "react-native";
 import { StyleSheet, View, Text } from "react-native";
+import { Image } from "expo-image";
 import { Padding, FontSize, FontFamily, Color, Gap } from "../GlobalStyles";
+import { format, addMonths, subMonths } from "date-fns";
 
-const Header = () => {
+interface HeaderProps {
+  currentDate: Date;
+  onMonthChange: (date: Date) => void;
+  title?: string;
+  showChevrons?: boolean;
+}
+
+const Header: React.FC<HeaderProps> = ({
+  currentDate,
+  onMonthChange,
+  title,
+  showChevrons = true,
+}) => {
+  const handlePreviousMonth = () => {
+    onMonthChange(subMonths(currentDate, 1));
+  };
+
+  const handleNextMonth = () => {
+    onMonthChange(addMonths(currentDate, 1));
+  };
+
+  const displayTitle = title || format(currentDate, "MMMM, yyyy");
+
   return (
     <View style={styles.header}>
       <View style={[styles.monthHeader, styles.monthHeaderFlexBox]}>
-        <View style={[styles.chevronLeftWrapper, styles.monthHeaderFlexBox]}>
-          <Image
-            style={styles.chevronLeftIcon}
-            contentFit="cover"
-            source={require("../assets/chevronleft.png")}
-          />
-        </View>
-        <Text style={styles.march2025}>March, 2025</Text>
-        <View style={[styles.chevronLeftWrapper, styles.monthHeaderFlexBox]}>
-          <Image
-            style={styles.chevronLeftIcon}
-            contentFit="cover"
-            source={require("../assets/chevronright.png")}
-          />
-        </View>
+        {showChevrons && (
+          <TouchableOpacity
+            style={[styles.chevronLeftWrapper, styles.monthHeaderFlexBox]}
+            onPress={handlePreviousMonth}
+          >
+            <Image
+              style={styles.chevronLeftIcon}
+              contentFit="cover"
+              source={require("../assets/chevronleft.png")}
+            />
+          </TouchableOpacity>
+        )}
+        <Text style={styles.march2025}>{displayTitle}</Text>
+        {showChevrons && (
+          <TouchableOpacity
+            style={[styles.chevronLeftWrapper, styles.monthHeaderFlexBox]}
+            onPress={handleNextMonth}
+          >
+            <Image
+              style={styles.chevronLeftIcon}
+              contentFit="cover"
+              source={require("../assets/chevronright.png")}
+            />
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );

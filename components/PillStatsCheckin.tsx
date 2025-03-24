@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { StyleSheet, View, Text } from "react-native";
 import {
   Color,
@@ -10,34 +10,31 @@ import {
 } from "../GlobalStyles";
 
 export type PillStatsCheckinType = {
-  checkIn?: string;
-
-  /** Style props */
-  iconBorderRadius?: number;
-  iconBackgroundColor?: string;
+  label: string;
+  count: number;
+  color?: string;
+  show?: boolean;
 };
 
-const getStyleValue = (key: string, value: string | number | undefined) => {
-  if (value === undefined) return;
-  return { [key]: value === "unset" ? undefined : value };
-};
-const PillStatsCheckin = ({
-  checkIn,
-  iconBorderRadius,
-  iconBackgroundColor,
-}: PillStatsCheckinType) => {
-  const iconStyle = useMemo(() => {
-    return {
-      ...getStyleValue("borderRadius", iconBorderRadius),
-      ...getStyleValue("backgroundColor", iconBackgroundColor),
-    };
-  }, [iconBorderRadius, iconBackgroundColor]);
+const PillStatsCheckin: React.FC<PillStatsCheckinType> = ({
+  label,
+  count,
+  color = Color.colorRoyalblue,
+  show = true,
+}) => {
+  if (!show) return null;
 
   return (
     <View style={[styles.pillStatsCheckin, styles.iconFlexBox]}>
-      <View style={[styles.icon, styles.iconFlexBox, iconStyle]} />
-      <Text style={styles.textTypo}>{checkIn}</Text>
-      <Text style={[styles.text, styles.textTypo]}>0</Text>
+      <View 
+        style={[
+          styles.icon, 
+          styles.iconFlexBox, 
+          { backgroundColor: color }
+        ]} 
+      />
+      <Text style={styles.textTypo}>{label}</Text>
+      <Text style={[styles.text, styles.textTypo]}>{count}</Text>
     </View>
   );
 };
@@ -58,23 +55,22 @@ const styles = StyleSheet.create({
   },
   icon: {
     borderRadius: Border.br_243xl_9,
-    backgroundColor: Color.colorRoyalblue,
-    width: 10,
-    height: 10,
+    width: 8,
+    height: 8,
   },
   text: {
-    width: 20,
+    minWidth: 20,
   },
   pillStatsCheckin: {
-    flex: 1,
     borderRadius: Border.br_81xl,
     borderStyle: "solid",
     borderColor: Color.colorGainsboro_100,
     borderWidth: 1,
     flexDirection: "row",
-    paddingHorizontal: Padding.p_xl,
-    paddingVertical: Padding.p_xs,
-    gap: Gap.gap_sm,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    gap: 8,
+    backgroundColor: Color.colorWhite,
   },
 });
 
