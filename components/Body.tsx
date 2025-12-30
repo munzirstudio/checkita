@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
   body: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingTop: 8,
   },
   statsBarFlexBox: {
     flexDirection: "row",
@@ -262,8 +262,9 @@ const Body: React.FC<BodyProps> = ({
 
     // Add days from next month
     if (currentWeek.length > 0) {
-      while (currentWeek.length < 7) {
-        currentWeek.push(addDays(monthEnd, currentWeek.length + 1));
+      const daysToAdd = 7 - currentWeek.length;
+      for (let i = 0; i < daysToAdd; i++) {
+        currentWeek.push(addDays(monthEnd, i + 1));
       }
       weeks.push(currentWeek);
     }

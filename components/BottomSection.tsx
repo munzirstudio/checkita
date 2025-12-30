@@ -1,10 +1,6 @@
 import * as React from "react";
 import { Text, StyleSheet, View, TouchableOpacity } from "react-native";
-import { Image } from "expo-image";
-import Check from "../assets/check.svg";
-import Morehorizontal from "../assets/morehorizontal.svg";
-import Check1 from "../assets/check1.svg";
-import Alarmclock1 from "../assets/alarmclock1.svg";
+import { Feather } from "@expo/vector-icons";
 import {
   Color,
   StyleVariable,
@@ -81,11 +77,7 @@ const BottomSection: React.FC<BottomSectionProps> = ({
                 style={[styles.buttonText, styles.buttonFlexBox]}
                 onPress={onClear}
               >
-                <Image
-                  style={[styles.trash2Icon, styles.iconLayout]}
-                  contentFit="cover"
-                  source={require("../assets/trash2.png")}
-                />
+                <Feather name="trash-2" size={16} color={Color.colorCrimson} />
                 <Text style={[styles.placeholder1, styles.placeholderTypo]}>
                   Clear {isCheckinDate ? "check-in" : "schedule"}
                 </Text>
@@ -97,11 +89,7 @@ const BottomSection: React.FC<BottomSectionProps> = ({
                 onPress={onSchedule}
               >
                 <View style={[styles.buttonText, styles.buttonFlexBox]}>
-                  <Image
-                    style={styles.alarmClockIcon}
-                    contentFit="cover"
-                    source={require("../assets/alarmclock.png")}
-                  />
+                  <Feather name="clock" size={16} color={Color.colorRoyalblue} />
                   <Text style={[styles.placeholder2, styles.placeholderTypo]}>
                     Schedule
                   </Text>
@@ -122,39 +110,30 @@ const BottomSection: React.FC<BottomSectionProps> = ({
           style={styles.menuItemLeft}
           onPress={() => onNavigate("home")}
         >
-          <Image
-            style={[
-              styles.homeIcon,
-              currentScreen === "home" && styles.activeIcon,
-            ]}
-            contentFit="cover"
-            source={require("../assets/home.png")}
+          <Feather 
+            name="home" 
+            size={24} 
+            color={currentScreen === "home" ? Color.colorRoyalblue : Color.colorSlategray} 
           />
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.menuItemCenter}
           onPress={() => onNavigate("leaderboard")}
         >
-          <Image
-            style={[
-              styles.trendingUpIcon,
-              currentScreen === "leaderboard" && styles.activeIcon,
-            ]}
-            contentFit="cover"
-            source={require("../assets/trendingup.png")}
+          <Feather 
+            name="trending-up" 
+            size={24} 
+            color={currentScreen === "leaderboard" ? Color.colorRoyalblue : Color.colorSlategray} 
           />
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.menuItemRight}
           onPress={() => onNavigate("settings")}
         >
-          <Image
-            style={[
-              styles.homeIcon,
-              currentScreen === "settings" && styles.activeIcon,
-            ]}
-            contentFit="cover"
-            source={require("../assets/settings.png")}
+          <Feather 
+            name="settings" 
+            size={24} 
+            color={currentScreen === "settings" ? Color.colorRoyalblue : Color.colorSlategray} 
           />
         </TouchableOpacity>
       </View>
@@ -278,6 +257,8 @@ const styles = StyleSheet.create({
     padding: Padding.p_xl,
     justifyContent: "center",
     alignSelf: "stretch",
+    paddingBottom: 40,
+    paddingTop: 24,
   },
   homeIcon: {
     width: 24,
@@ -316,6 +297,7 @@ const styles = StyleSheet.create({
     height: 88,
     backgroundColor: Color.colorWhite,
     justifyContent: "space-between",
+    display: 'none',
   },
   bottomSection: {
     alignSelf: "stretch",

@@ -41,4 +41,12 @@ Thumbs.db
 
 # Turtle
 turtle-build/
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Metro bundler cache
+.metro/
   

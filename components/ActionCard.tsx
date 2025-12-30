@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Text, StyleSheet, View, TouchableOpacity } from "react-native";
-import { Image } from "expo-image";
+import { Feather } from "@expo/vector-icons";
 import {
   Color,
   StyleVariable,
@@ -68,11 +68,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
               style={[styles.buttonText, styles.buttonFlexBox]}
               onPress={onClear}
             >
-              <Image
-                style={[styles.trash2Icon, styles.iconLayout]}
-                contentFit="cover"
-                source={require("../assets/trash2.png")}
-              />
+              <Feather name="trash-2" size={16} color={Color.colorCrimson} />
               <Text style={[styles.placeholder1, styles.placeholderTypo]}>
                 Clear {isCheckinDate ? "check-in" : "schedule"}
               </Text>
@@ -84,11 +80,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
               onPress={onSchedule}
             >
               <View style={[styles.buttonText, styles.buttonFlexBox]}>
-                <Image
-                  style={styles.alarmClockIcon}
-                  contentFit="cover"
-                  source={require("../assets/alarmclock.png")}
-                />
+                <Feather name="clock" size={16} color={Color.colorRoyalblue} />
                 <Text style={[styles.placeholder2, styles.placeholderTypo]}>
                   Schedule
                 </Text>

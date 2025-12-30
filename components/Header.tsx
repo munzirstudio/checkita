@@ -1,7 +1,7 @@
 import * as React from "react";
 import { TouchableOpacity } from "react-native";
 import { StyleSheet, View, Text } from "react-native";
-import { Image } from "expo-image";
+import { Feather } from "@expo/vector-icons";
 import { Padding, FontSize, FontFamily, Color, Gap } from "../GlobalStyles";
 import { format, addMonths, subMonths } from "date-fns";
 
@@ -36,11 +36,7 @@ const Header: React.FC<HeaderProps> = ({
             style={[styles.chevronLeftWrapper, styles.monthHeaderFlexBox]}
             onPress={handlePreviousMonth}
           >
-            <Image
-              style={styles.chevronLeftIcon}
-              contentFit="cover"
-              source={require("../assets/chevronleft.png")}
-            />
+            <Feather name="chevron-left" size={24} color={Color.colorGray} />
           </TouchableOpacity>
         )}
         <Text style={styles.march2025}>{displayTitle}</Text>
@@ -49,11 +45,7 @@ const Header: React.FC<HeaderProps> = ({
             style={[styles.chevronLeftWrapper, styles.monthHeaderFlexBox]}
             onPress={handleNextMonth}
           >
-            <Image
-              style={styles.chevronLeftIcon}
-              contentFit="cover"
-              source={require("../assets/chevronright.png")}
-            />
+            <Feather name="chevron-right" size={24} color={Color.colorGray} />
           </TouchableOpacity>
         )}
       </View>
