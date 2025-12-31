@@ -87,6 +87,10 @@ class DataService {
       item.date <= endDate
     );
   }
+
+  async getAllStatuses(): Promise<DateStatus[]> {
+    return await this.getStoredData();
+  }
 }
 
 export const dataService = new DataService(); 

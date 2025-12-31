@@ -1,4 +1,4 @@
-{
+  {
   "expo": {
     "name": "checkita",
     "slug": "checkita",
@@ -30,8 +30,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#2563EB"
       },
-      "package": "com.checkita.app",
-      "versionCode": 1
+      "package": "com.checkita.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"

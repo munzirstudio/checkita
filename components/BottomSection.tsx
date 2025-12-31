@@ -1,6 +1,7 @@
 import * as React from "react";
-import { Text, StyleSheet, View, TouchableOpacity } from "react-native";
+import { Text, StyleSheet, View, TouchableOpacity, Platform } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Color,
   StyleVariable,
@@ -33,6 +34,7 @@ const BottomSection: React.FC<BottomSectionProps> = ({
   onNavigate,
   currentScreen,
 }) => {
+  const insets = useSafeAreaInsets();
   const showActionCard = selectedDate !== null && dateStatus !== "disabled";
 
   const getDateLabel = () => {
@@ -53,14 +55,49 @@ const BottomSection: React.FC<BottomSectionProps> = ({
     now.setHours(0, 0, 0, 0);
     const isFutureDate = selectedDate > now;
 
+    // Calculate bottom padding: base 40px + Android safe area inset
+    const bottomPadding = Padding.p_21xl + (Platform.OS === 'android' ? Math.max(insets.bottom, 0) : 0);
+
     return (
-      <View style={[styles.actionCard, styles.menuBarFlexBox1]}>
+      <View style={[
+        styles.actionCard, 
+        styles.menuBarFlexBox1,
+        { paddingBottom: bottomPadding }
+      ]}>
         <View style={styles.selectedDateLabel}>
           <Text style={styles.dateLabel}>{getDateLabel()}</Text>
         </View>
-        <View style={[styles.content, styles.buttonFlexBox2]}>
-          {isCurrentDay && !isCheckinDate && (
-            <View style={styles.buttonFlexBox2}>
+        <View style={styles.content}>
+          {/* For today: Show clear check-in if checked in - MUST be visible */}
+          {isCurrentDay && isCheckinDate ? (
+            <TouchableOpacity
+              style={[styles.buttonText, styles.clearButtonStandalone]}
+              onPress={onClear}
+            >
+              <Feather name="trash-2" size={16} color={Color.colorCrimson} />
+              <Text style={[styles.placeholder1, styles.placeholderTypo]}>
+                Clear check-in
+              </Text>
+            </TouchableOpacity>
+          ) : null}
+          {/* For today: Show clear schedule if scheduled (but not checked in) */}
+          {isCurrentDay && isScheduledDate && !isCheckinDate ? (
+            <TouchableOpacity
+              style={[styles.buttonText, styles.clearButtonAboveCheckIn]}
+              onPress={onClear}
+            >
+              <Feather name="trash-2" size={16} color={Color.colorCrimson} />
+              <Text style={[styles.placeholder1, styles.placeholderTypo]}>
+                Clear schedule
+              </Text>
+            </TouchableOpacity>
+          ) : null}
+          {/* Check-in button - always at bottom for today (if not checked in) */}
+          {isCurrentDay && !isCheckinDate ? (
+            <View style={[
+              styles.buttonFlexBox2,
+              isScheduledDate && styles.buttonFlexBox2WithClearLink
+            ]}>
               <TouchableOpacity
                 style={[styles.buttonLarge, styles.buttonFlexBox1]}
                 onPress={onCheckIn}
@@ -70,33 +107,36 @@ const BottomSection: React.FC<BottomSectionProps> = ({
                 </Text>
               </TouchableOpacity>
             </View>
-          )}
-          <View style={[styles.secondaryActions, styles.menuBarFlexBox]}>
-            {(isCheckinDate || isScheduledDate) && (
-              <TouchableOpacity
-                style={[styles.buttonText, styles.buttonFlexBox]}
-                onPress={onClear}
-              >
-                <Feather name="trash-2" size={16} color={Color.colorCrimson} />
-                <Text style={[styles.placeholder1, styles.placeholderTypo]}>
-                  Clear {isCheckinDate ? "check-in" : "schedule"}
-                </Text>
-              </TouchableOpacity>
-            )}
-            {(isFutureDate || (isCurrentDay && !isCheckinDate)) && !isScheduledDate && (
-              <TouchableOpacity
-                style={[styles.buttonSchedule, styles.buttonFlexBox]}
-                onPress={onSchedule}
-              >
-                <View style={[styles.buttonText, styles.buttonFlexBox]}>
-                  <Feather name="clock" size={16} color={Color.colorRoyalblue} />
-                  <Text style={[styles.placeholder2, styles.placeholderTypo]}>
-                    Schedule
+          ) : null}
+          {/* For future dates: Show clear and schedule options */}
+          {!isCurrentDay && (
+            <View style={[styles.secondaryActions, styles.menuBarFlexBox]}>
+              {(isCheckinDate || isScheduledDate) && (
+                <TouchableOpacity
+                  style={[styles.buttonText, styles.buttonFlexBox]}
+                  onPress={onClear}
+                >
+                  <Feather name="trash-2" size={16} color={Color.colorCrimson} />
+                  <Text style={[styles.placeholder1, styles.placeholderTypo]}>
+                    Clear {isCheckinDate ? "check-in" : "schedule"}
                   </Text>
-                </View>
-              </TouchableOpacity>
-            )}
-          </View>
+                </TouchableOpacity>
+              )}
+              {isFutureDate && !isScheduledDate && (
+                <TouchableOpacity
+                  style={[styles.buttonSchedule, styles.buttonFlexBox]}
+                  onPress={onSchedule}
+                >
+                  <View style={[styles.buttonText, styles.buttonFlexBox]}>
+                    <Feather name="clock" size={16} color={Color.colorRoyalblue} />
+                    <Text style={[styles.placeholder2, styles.placeholderTypo]}>
+                      Schedule
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
         </View>
       </View>
     );
@@ -150,6 +190,11 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     alignItems: "center",
     alignSelf: "stretch",
+    marginBottom: 0,
+  },
+  buttonFlexBox2WithClearLink: {
+    marginTop: 0,
+    marginBottom: 0,
   },
   buttonFlexBox1: {
     paddingHorizontal: StyleVariable.componentsButtonSpacingXLG,
@@ -211,6 +256,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  checkInCircleButton: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: Color.colorRoyalblue,
+    justifyContent: "center",
+    alignItems: "center",
+    alignSelf: "center",
+  },
   trash2Icon: {
     height: 16,
   },
@@ -230,6 +284,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flex: 1,
     flexDirection: "row",
+  },
+  clearButtonFullWidth: {
+    alignSelf: "stretch",
+    marginBottom: 4,
+    minHeight: 44,
+    opacity: 1,
+    zIndex: 1,
+  },
+  clearButtonStandalone: {
+    alignSelf: "stretch",
+    marginBottom: 16,
+    minHeight: 44,
+    opacity: 1,
+    zIndex: 1,
+  },
+  clearButtonAboveCheckIn: {
+    alignSelf: "stretch",
+    marginBottom: 16,
+    minHeight: 44,
+    opacity: 1,
+    zIndex: 1,
   },
   alarmClockIcon: {
     width: 17,
@@ -251,13 +326,13 @@ const styles = StyleSheet.create({
     gap: Gap.gap_lg,
   },
   content: {
-    gap: 16,
+    alignSelf: "stretch",
   },
   actionCard: {
-    padding: Padding.p_xl,
-    justifyContent: "center",
+    paddingLeft: Padding.p_xl,
+    paddingRight: Padding.p_xl,
     alignSelf: "stretch",
-    paddingBottom: 40,
+    paddingBottom: Padding.p_21xl,
     paddingTop: 24,
   },
   homeIcon: {

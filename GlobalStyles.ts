@@ -56,4 +56,5 @@ export const Border = {
   br_678xl_1: 697,
   br_81xl: 100,
   br_243xl_9: 263,
+  dateBorderRadius: 100, // Border radius for calendar date states
 };

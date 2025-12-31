@@ -1,6 +1,6 @@
 import * as React from "react";
 import { StyleSheet, View, TouchableOpacity } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import {
   Color,
   FontSize,
@@ -20,30 +20,39 @@ const MenuBar: React.FC<MenuBarProps> = ({ onNavigate, currentScreen }) => {
         style={styles.menuItemLeft}
         onPress={() => onNavigate("home")}
       >
-        <Feather 
-          name="home" 
-          size={24} 
-          color={currentScreen === "home" ? Color.colorRoyalblue : Color.colorSlategray} 
+        <Image
+          style={[
+            styles.homeIcon,
+            currentScreen === "home" && styles.activeIcon,
+          ]}
+          contentFit="cover"
+          source={require("../assets/home.png")}
         />
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.menuItemCenter}
         onPress={() => onNavigate("leaderboard")}
       >
-        <Feather 
-          name="trending-up" 
-          size={24} 
-          color={currentScreen === "leaderboard" ? Color.colorRoyalblue : Color.colorSlategray} 
+        <Image
+          style={[
+            styles.trendingUpIcon,
+            currentScreen === "leaderboard" && styles.activeIcon,
+          ]}
+          contentFit="cover"
+          source={require("../assets/trendingup.png")}
         />
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.menuItemRight}
         onPress={() => onNavigate("settings")}
       >
-        <Feather 
-          name="settings" 
-          size={24} 
-          color={currentScreen === "settings" ? Color.colorRoyalblue : Color.colorSlategray} 
+        <Image
+          style={[
+            styles.homeIcon,
+            currentScreen === "settings" && styles.activeIcon,
+          ]}
+          contentFit="cover"
+          source={require("../assets/settings.png")}
         />
       </TouchableOpacity>
     </View>

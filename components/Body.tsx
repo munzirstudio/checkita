@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
   icon: {
     width: 38,
     height: 38,
-    borderRadius: 19,
+    borderRadius: Border.dateBorderRadius,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -112,28 +112,34 @@ const styles = StyleSheet.create({
   },
   dateCheckin: {
     backgroundColor: Color.colorRoyalblue,
+    borderRadius: Border.dateBorderRadius,
   },
   dateScheduled: {
     backgroundColor: Color.colorAliceblue,
     borderWidth: 0,
+    borderRadius: Border.dateBorderRadius,
   },
   dateSelectedCheckin: {
-    backgroundColor: '#1D40AE',
+    backgroundColor: Color.colorRoyalblue,
+    borderRadius: Border.dateBorderRadius,
   },
   dateSelectedScheduled: {
     backgroundColor: Color.colorAliceblue,
     borderWidth: 1,
     borderColor: Color.colorRoyalblue,
+    borderRadius: Border.dateBorderRadius,
   },
   dateSelectedInactive: {
     backgroundColor: "transparent",
     borderWidth: 1,
     borderColor: Color.colorRoyalblue,
+    borderRadius: Border.dateBorderRadius,
   },
   dateSelectedActive: {
     backgroundColor: "transparent",
     borderWidth: 1,
     borderColor: Color.colorRoyalblue,
+    borderRadius: Border.dateBorderRadius,
   },
   dateTextDisabled: {
     color: Color.colorGainsboro_100,
