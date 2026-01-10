@@ -4,6 +4,7 @@ import { StyleSheet, View, Text } from "react-native";
 import { Image } from "expo-image";
 import { Padding, FontSize, FontFamily, Color, Gap } from "../GlobalStyles";
 import { format, addMonths, subMonths } from "date-fns";
+import { useTheme } from "../hooks/useTheme";
 
 interface HeaderProps {
   currentDate: Date;
@@ -18,6 +19,7 @@ const Header: React.FC<HeaderProps> = ({
   title,
   showChevrons = true,
 }) => {
+  const { colors } = useTheme();
   const handlePreviousMonth = () => {
     onMonthChange(subMonths(currentDate, 1));
   };
@@ -43,7 +45,7 @@ const Header: React.FC<HeaderProps> = ({
             />
           </TouchableOpacity>
         )}
-        <Text style={styles.march2025}>{displayTitle}</Text>
+        <Text style={[styles.march2025, { color: colors.colorGray }]}>{displayTitle}</Text>
         {showChevrons && (
           <TouchableOpacity
             style={[styles.chevronLeftWrapper, styles.monthHeaderFlexBox]}

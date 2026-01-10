@@ -8,6 +8,7 @@ import {
   Padding,
   Gap,
 } from "../GlobalStyles";
+import { useTheme } from "../hooks/useTheme";
 
 export type PillStatsCheckinType = {
   label: string;
@@ -22,19 +23,21 @@ const PillStatsCheckin: React.FC<PillStatsCheckinType> = ({
   color = Color.colorRoyalblue,
   show = true,
 }) => {
+  const { colors: themeColors } = useTheme();
   if (!show) return null;
 
   return (
-    <View style={[styles.pillStatsCheckin, styles.iconFlexBox]}>
-      <View 
-        style={[
-          styles.icon, 
-          styles.iconFlexBox, 
-          { backgroundColor: color }
-        ]} 
-      />
-      <Text style={styles.textTypo}>{label}</Text>
-      <Text style={[styles.text, styles.textTypo]}>{count}</Text>
+    <View style={[styles.pillStatsCheckin, styles.iconFlexBox, { backgroundColor: themeColors.colorWhite }]}>
+      <Text style={[styles.bigCount, { color: themeColors.colorBlack }]}>{count}</Text>
+      <View style={styles.labelContainer}>
+        <View 
+          style={[
+            styles.icon, 
+            { backgroundColor: color }
+          ]} 
+        />
+        <Text style={[styles.textTypo, { color: themeColors.colorBlack }]}>{label}</Text>
+      </View>
     </View>
   );
 };
@@ -58,18 +61,31 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
   },
-  text: {
-    minWidth: 20,
+  bigCount: {
+    textAlign: "center",
+    color: Color.colorBlack,
+    fontFamily: FontFamily.inputMediumSemiBold,
+    fontWeight: "600",
+    fontSize: 46,
+    lineHeight: 40,
+    letterSpacing: 0,
+    marginBottom: 20,
+  },
+  labelContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
   },
   pillStatsCheckin: {
     borderRadius: Border.br_81xl,
     borderStyle: "solid",
     borderColor: Color.colorGainsboro_100,
     borderWidth: 0,
-    flexDirection: "row",
+    flexDirection: "column",
     paddingHorizontal: 8,
     paddingVertical: 8,
-    gap: 8,
+    gap: 0,
     backgroundColor: Color.colorWhite,
   },
 });

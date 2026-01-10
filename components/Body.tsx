@@ -12,6 +12,7 @@ import {
 } from "../GlobalStyles";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay, addDays, subDays } from "date-fns";
 import { DateStatus } from "./BottomSection";
+import { useTheme } from "../hooks/useTheme";
 
 interface BodyProps {
   currentDate: Date;
@@ -69,7 +70,6 @@ const styles = StyleSheet.create({
     fontSize: FontSize.sMMedium_size,
   },
   week: {
-    color: "#6B7280",
     fontSize: 12,
     lineHeight: 16,
   },
@@ -169,6 +169,7 @@ const Body: React.FC<BodyProps> = ({
   scheduledDates,
   onDateSelect,
 }) => {
+  const { colors } = useTheme();
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
@@ -212,19 +213,21 @@ const Body: React.FC<BodyProps> = ({
     const status = getDateStatus(date);
     const isSelected = selectedDate && isSameDay(date, selectedDate);
 
+    const baseStyle = [styles.icon];
+    
     switch (status) {
       case "disabled":
-        return styles.dateDisabled;
+        return [baseStyle, styles.dateDisabled];
       case "checkin":
-        return isSelected ? styles.dateSelectedCheckin : styles.dateCheckin;
+        return [baseStyle, isSelected ? styles.dateSelectedCheckin : styles.dateCheckin, { backgroundColor: colors.colorRoyalblue }];
       case "scheduled":
-        return isSelected ? styles.dateSelectedScheduled : styles.dateScheduled;
+        return [baseStyle, isSelected ? styles.dateSelectedScheduled : styles.dateScheduled, { backgroundColor: colors.colorAliceblue, borderColor: isSelected ? colors.colorRoyalblue : undefined }];
       case "inactive":
-        return isSelected ? styles.dateSelectedInactive : styles.dateInactive;
+        return [baseStyle, styles.dateInactive, isSelected && { borderColor: colors.colorRoyalblue }];
       case "active":
-        return isSelected ? styles.dateSelectedActive : styles.dateActive;
+        return [baseStyle, styles.dateActive, isSelected && { borderColor: colors.colorRoyalblue }];
       default:
-        return styles.dateActive;
+        return [baseStyle, styles.dateActive];
     }
   };
 
@@ -233,17 +236,17 @@ const Body: React.FC<BodyProps> = ({
     
     switch (status) {
       case "disabled":
-        return styles.dateTextDisabled;
+        return [styles.date, { color: colors.colorGainsboro_100 }];
       case "inactive":
-        return styles.dateTextInactive;
+        return [styles.date, { color: colors.colorDarkgray }];
       case "active":
-        return styles.dateTextActive;
+        return [styles.date, { color: colors.colorBlack }];
       case "checkin":
-        return styles.dateTextCheckin;
+        return [styles.date, { color: colors.colorWhite }];
       case "scheduled":
-        return styles.dateTextScheduled;
+        return [styles.date, { color: colors.colorBlack }];
       default:
-        return styles.dateTextActive;
+        return [styles.date, { color: colors.colorBlack }];
     }
   };
 
@@ -253,8 +256,8 @@ const Body: React.FC<BodyProps> = ({
 
     // Add days from previous month
     const firstDayOfMonth = monthStart.getDay();
-    for (let i = firstDayOfMonth - 1; i >= 0; i--) {
-      currentWeek.unshift(subDays(monthStart, i + 1));
+    for (let i = 0; i < firstDayOfMonth; i++) {
+      currentWeek.push(subDays(monthStart, firstDayOfMonth - i));
     }
 
     // Add days of current month
@@ -293,8 +296,8 @@ const Body: React.FC<BodyProps> = ({
               onPress={() => !isDisabled && onDateSelect(date)}
               disabled={isDisabled}
             >
-              <View style={[styles.icon, getDateStyle(date)]}>
-                <Text style={[styles.date, getDateTextStyle(date)]}>
+              <View style={getDateStyle(date)}>
+                <Text style={getDateTextStyle(date)}>
                   {format(date, "d")}
                 </Text>
               </View>
@@ -306,31 +309,21 @@ const Body: React.FC<BodyProps> = ({
   };
 
   return (
-    <View style={styles.body}>
+    <View style={[styles.body, { backgroundColor: colors.colorWhite }]}>
       <View style={[styles.statsBar, styles.statsBarFlexBox]}>
-        <View style={[styles.pillContainer, !showSchedulePill() && styles.pillContainerCenter]}>
+        <View style={styles.pillContainerCenter}>
           <PillStatsCheckin
-            label="Check-in"
+            label={currentMonthCheckins.length > 1 ? "Check-ins" : "Check-in"}
             count={currentMonthCheckins.length}
-            color={Color.colorRoyalblue}
+            color={colors.colorRoyalblue}
           />
-          {showSchedulePill() && (
-            <>
-              <View style={{ width: Gap.gap_sm + Gap.gap_xs }} />
-              <PillStatsCheckin
-                label="Schedule"
-                count={currentMonthSchedules.length}
-                color={Color.colorAliceblue}
-              />
-            </>
-          )}
         </View>
       </View>
       <View style={styles.calendar}>
         <View style={styles.weekFlexBox}>
           {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day, index) => (
             <View key={index} style={styles.datepickerWeekDate}>
-              <Text style={[styles.week, styles.dateTypo]}>{day}</Text>
+              <Text style={[styles.week, styles.dateTypo, { color: colors.colorSlategray }]}>{day}</Text>
             </View>
           ))}
         </View>

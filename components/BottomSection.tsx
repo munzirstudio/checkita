@@ -12,6 +12,7 @@ import {
   Gap,
 } from "../GlobalStyles";
 import { format, isToday } from "date-fns";
+import { useTheme } from "../hooks/useTheme";
 
 export type DateStatus = "active" | "inactive" | "checkin" | "scheduled" | "disabled";
 
@@ -35,6 +36,7 @@ const BottomSection: React.FC<BottomSectionProps> = ({
   currentScreen,
 }) => {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
   const showActionCard = selectedDate !== null && dateStatus !== "disabled";
 
   const getDateLabel = () => {
@@ -62,10 +64,10 @@ const BottomSection: React.FC<BottomSectionProps> = ({
       <View style={[
         styles.actionCard, 
         styles.menuBarFlexBox1,
-        { paddingBottom: bottomPadding }
+        { paddingBottom: bottomPadding, backgroundColor: colors.colorWhite }
       ]}>
         <View style={styles.selectedDateLabel}>
-          <Text style={styles.dateLabel}>{getDateLabel()}</Text>
+          <Text style={[styles.dateLabel, { color: colors.colorGray }]}>{getDateLabel()}</Text>
         </View>
         <View style={styles.content}>
           {/* For today: Show clear check-in if checked in - MUST be visible */}
@@ -92,24 +94,36 @@ const BottomSection: React.FC<BottomSectionProps> = ({
               </Text>
             </TouchableOpacity>
           ) : null}
-          {/* Check-in button - always at bottom for today (if not checked in) */}
-          {isCurrentDay && !isCheckinDate ? (
+          {/* For past dates (not today): Show clear schedule if scheduled (but not checked in) */}
+          {!isCurrentDay && !isFutureDate && isScheduledDate && !isCheckinDate ? (
+            <TouchableOpacity
+              style={[styles.buttonText, styles.clearButtonAboveCheckIn]}
+              onPress={onClear}
+            >
+              <Feather name="trash-2" size={16} color={Color.colorCrimson} />
+              <Text style={[styles.placeholder1, styles.placeholderTypo]}>
+                Clear schedule
+              </Text>
+            </TouchableOpacity>
+          ) : null}
+          {/* Check-in button - show for today and past dates (if not checked in) */}
+          {!isCheckinDate && (isCurrentDay || !isFutureDate) ? (
             <View style={[
               styles.buttonFlexBox2,
               isScheduledDate && styles.buttonFlexBox2WithClearLink
             ]}>
-              <TouchableOpacity
-                style={[styles.buttonLarge, styles.buttonFlexBox1]}
-                onPress={onCheckIn}
-              >
-                <Text style={[styles.placeholder, styles.placeholderTypo]}>
-                  Check in
-                </Text>
-              </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.buttonLarge, styles.buttonFlexBox1, { backgroundColor: colors.colorRoyalblue }]}
+              onPress={onCheckIn}
+            >
+              <Text style={[styles.placeholder, styles.placeholderTypo, { color: colors.colorWhite }]}>
+                Check in
+              </Text>
+            </TouchableOpacity>
             </View>
           ) : null}
           {/* For future dates: Show clear and schedule options */}
-          {!isCurrentDay && (
+          {isFutureDate && (
             <View style={[styles.secondaryActions, styles.menuBarFlexBox]}>
               {(isCheckinDate || isScheduledDate) && (
                 <TouchableOpacity
@@ -122,7 +136,7 @@ const BottomSection: React.FC<BottomSectionProps> = ({
                   </Text>
                 </TouchableOpacity>
               )}
-              {isFutureDate && !isScheduledDate && (
+              {!isScheduledDate && (
                 <TouchableOpacity
                   style={[styles.buttonSchedule, styles.buttonFlexBox]}
                   onPress={onSchedule}
@@ -137,13 +151,27 @@ const BottomSection: React.FC<BottomSectionProps> = ({
               )}
             </View>
           )}
+          {/* For past dates (not today): Show clear option if checked in */}
+          {!isCurrentDay && !isFutureDate && isCheckinDate && (
+            <View style={[styles.secondaryActions, styles.menuBarFlexBox]}>
+              <TouchableOpacity
+                style={[styles.buttonText, styles.buttonFlexBox]}
+                onPress={onClear}
+              >
+                <Feather name="trash-2" size={16} color={Color.colorCrimson} />
+                <Text style={[styles.placeholder1, styles.placeholderTypo]}>
+                  Clear check-in
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       </View>
     );
   };
 
   return (
-    <View style={styles.bottomSection}>
+    <View style={[styles.bottomSection, { backgroundColor: colors.colorWhite }]}>
       {renderActionCard()}
       <View style={[styles.menuBar]}>
         <TouchableOpacity
@@ -153,7 +181,7 @@ const BottomSection: React.FC<BottomSectionProps> = ({
           <Feather 
             name="home" 
             size={24} 
-            color={currentScreen === "home" ? Color.colorRoyalblue : Color.colorSlategray} 
+            color={currentScreen === "home" ? colors.colorRoyalblue : colors.colorSlategray} 
           />
         </TouchableOpacity>
         <TouchableOpacity
@@ -163,7 +191,7 @@ const BottomSection: React.FC<BottomSectionProps> = ({
           <Feather 
             name="trending-up" 
             size={24} 
-            color={currentScreen === "leaderboard" ? Color.colorRoyalblue : Color.colorSlategray} 
+            color={currentScreen === "leaderboard" ? colors.colorRoyalblue : colors.colorSlategray} 
           />
         </TouchableOpacity>
         <TouchableOpacity

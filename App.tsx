@@ -9,12 +9,14 @@ import Body from "./components/Body";
 import BottomSection from "./components/BottomSection";
 import { Color, FontFamily, FontSize } from "./GlobalStyles";
 import { dataService, DateStatus } from "./lib/dataService";
+import { useTheme } from "./hooks/useTheme";
 
 const Tab = createBottomTabNavigator();
 
 type Screen = "home" | "leaderboard" | "settings";
 
 const HomeScreen = () => {
+  const { colors } = useTheme();
   const [currentDate, setCurrentDate] = React.useState(new Date());
   const [selectedDate, setSelectedDate] = React.useState<Date | null>(null);
   const [checkinDates, setCheckinDates] = React.useState<Date[]>([]);
@@ -132,7 +134,7 @@ const HomeScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.colorWhite }]}>
       <Header
         currentDate={currentDate}
         onMonthChange={handleMonthChange}

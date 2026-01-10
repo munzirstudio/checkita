@@ -22,6 +22,25 @@ export const Color = {
   colorSlategray: "#6b7280",
   colorBlack: "#000",
 };
+
+/* Dark Mode Colors */
+export const DarkColor = {
+  colorWhite: "#1a1a1a", // Dark background
+  colorGainsboro_100: "#2d2d2d", // Dark border/divider
+  colorGainsboro_200: "#3a3a3a", // Darker border
+  colorRoyalblue: "#3b82f6", // Slightly lighter blue for dark mode
+  colorCrimson: "#ef4444", // Keep red the same
+  colorGray: "#e5e5e5", // Light text on dark
+  colorAliceblue: "#1e3a5f", // Darker blue background
+  colorDarkgray: "#9ca3af", // Lighter gray for dark mode
+  colorSlategray: "#9ca3af", // Lighter gray for dark mode
+  colorBlack: "#ffffff", // White text on dark
+};
+
+/* Theme-aware color getter */
+export const getColors = (isDark: boolean) => {
+  return isDark ? DarkColor : Color;
+};
 /* Style Variables */
 export const StyleVariable = {
   advancedFormsDatepickerWeekNamesInlineListBorderRadius: 999,
