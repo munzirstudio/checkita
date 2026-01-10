@@ -221,13 +221,13 @@ const Body: React.FC<BodyProps> = ({
       case "checkin":
         return [baseStyle, isSelected ? styles.dateSelectedCheckin : styles.dateCheckin, { backgroundColor: colors.colorRoyalblue }];
       case "scheduled":
-        return [baseStyle, isSelected ? styles.dateSelectedScheduled : styles.dateScheduled, { backgroundColor: colors.colorAliceblue, borderColor: isSelected ? colors.colorRoyalblue : undefined }];
+        return [baseStyle, isSelected ? styles.dateSelectedScheduled : styles.dateScheduled, { backgroundColor: colors.colorAliceblue, borderColor: isSelected ? colors.colorRoyalblue : undefined, borderWidth: isSelected ? 1 : 0 }];
       case "inactive":
-        return [baseStyle, styles.dateInactive, isSelected && { borderColor: colors.colorRoyalblue }];
+        return [baseStyle, styles.dateInactive, isSelected && { borderColor: colors.colorRoyalblue, borderWidth: 1, borderRadius: Border.dateBorderRadius }];
       case "active":
-        return [baseStyle, styles.dateActive, isSelected && { borderColor: colors.colorRoyalblue }];
+        return [baseStyle, styles.dateActive, isSelected && { borderColor: colors.colorRoyalblue, borderWidth: 1, borderRadius: Border.dateBorderRadius }];
       default:
-        return [baseStyle, styles.dateActive];
+        return [baseStyle, styles.dateActive, isSelected && { borderColor: colors.colorRoyalblue, borderWidth: 1, borderRadius: Border.dateBorderRadius }];
     }
   };
 
